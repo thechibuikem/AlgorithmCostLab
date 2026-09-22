@@ -21,11 +21,11 @@ time once the book has a million names.
 
 Three approaches to the same lookup, side by side:
 
-| Approach      | Time          | Extra space   |
-|---------------|---------------|---------------|
-| Linear Search | O(n)          | O(1)          |
-| Binary Search | O(log n)      | O(1)          |
-| HashSet Lookup| O(1) average  | O(n)          |
+| Approach      | Time Complexity        | space Complexity (Auxiliary)   |
+|---------------|------------------------|--------------------------------|
+| Linear Search | O(n)                   | O(1)                           |
+| Binary Search | O(log n)               | O(1)                           |
+| HashSet Lookup| O(1) average           | O(n)                           |
 
 ## The Theory
 
