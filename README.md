@@ -114,22 +114,40 @@ for infrastructure-level fixes, not a replacement for them.
 
 ```
 algorithm-cost-lab/
-├── src/
-│   ├── main/java/.../
-│   │   ├── controller/BenchmarkController.java
-│   │   ├── service/BenchmarkService.java
-│   │   ├── algorithm/
-│   │   │   ├── LinearSearch.java
-│   │   │   ├── BinarySearch.java
-│   │   │   └── HashLookup.java
-│   │   └── model/BenchmarkResult.java
-│   └── test/...
-├── results/
-│   ├── benchmark.csv
-│   └── performance.png
+├── Dockerfile
+├── docker-compose.yml
+├── .dockerignore
 ├── README.md
 ├── SETUP.md
-└── pom.xml
+├── REQUIREMENTS.md
+├── pom.xml
+├── src/
+│   ├── main/
+│   │   ├── java/com/ataraxia/algorithmcostlab/
+│   │   │   ├── AlgorithmCostLabApplication.java
+│   │   │   ├── controller/
+│   │   │   │   └── BenchmarkController.java
+│   │   │   ├── service/
+│   │   │   │   └── BenchmarkService.java
+│   │   │   ├── algorithm/
+│   │   │   │   ├── LinearSearch.java
+│   │   │   │   ├── BinarySearch.java
+│   │   │   │   └── HashLookup.java
+│   │   │   ├── benchmark/
+│   │   │   │   └── LookupBenchmark.java
+│   │   │   └── model/
+│   │   │       └── BenchmarkResult.java
+│   │   └── resources/
+│   │       └── application.properties
+│   └── test/
+│       └── java/com/ataraxia/algorithmcostlab/
+│           └── algorithm/
+│               ├── LinearSearchTest.java
+│               ├── BinarySearchTest.java
+│               └── HashLookupTest.java
+└── results/
+    ├── benchmark.csv
+    └── performance.png
 ```
 
 ## Scope
