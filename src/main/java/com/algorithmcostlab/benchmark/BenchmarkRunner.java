@@ -13,14 +13,14 @@ import java.io.File;
  * Maven (see below). Writes results/benchmark.csv from real JMH output.
  */
 public class BenchmarkRunner {
-
+    
     public static void main(String[] args) throws RunnerException {
         new File("results").mkdirs();
 
         Options options = new OptionsBuilder()
                 .include(LookupBenchmark.class.getSimpleName())
-                .resultFormat(ResultFormatType.CSV)
-                .result("results/benchmark.csv")
+                .resultFormat(ResultFormatType.JSON)
+                .result("results/benchmark.json")
                 .build();
 
         new Runner(options).run();

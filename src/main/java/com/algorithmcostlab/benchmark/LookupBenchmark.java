@@ -45,7 +45,7 @@ public class LookupBenchmark {
         // any one algorithm, so the comparison stays fair.
         target = sortedIds.get(size / 2);
     }
-
+    
     @Benchmark
     public boolean linearSearch() {
         return LinearSearch.exists(sortedIds, target);
