@@ -21,11 +21,11 @@ time once the book has a million names.
 
 Three approaches to the same lookup, side by side:
 
-| Approach      | Time Complexity        | space Complexity (Auxiliary)   |
-|---------------|------------------------|--------------------------------|
-| Linear Search | O(n)                   | O(1)                           |
-| Binary Search | O(log n)               | O(1)                           |
-| HashSet Lookup| O(1) average           | O(n)                           |
+| Approach      | Time          | Extra space   |
+|---------------|---------------|---------------|
+| Linear Search | O(n)          | O(1)          |
+| Binary Search | O(log n)      | O(1)          |
+| HashSet Lookup| O(1) average  | O(n)          |
 
 ## The Theory
 
@@ -58,6 +58,13 @@ GET /api/benchmark?size=1000000
 Dataset sizes tested: 10,000 / 100,000 / 1,000,000 (10,000,000 if the
 machine handles it without memory issues).
 
+Note: the REST endpoint above and the raw `results/benchmark.json`
+file are not the same shape. JMH writes its own detailed schema to
+`benchmark.json` (per-benchmark `params`, `primaryMetric`, raw
+iteration data, and more). `BenchmarkService` reads that file and
+reformats it into the simpler `{ datasetSize, results: [...] }` shape
+shown above for the API response.
+
 ## Architecture
 
 ```
@@ -82,16 +89,32 @@ Benchmark Results
 
 ## Results
 
-*Not yet run. This table will be filled in from actual JMH output once
-the benchmarks execute — no numbers are invented ahead of time.*
+Measured with JMH (3 warmup + 5 measurement iterations, average time
+mode), taken directly from `results/benchmark.json`.
 
-| Dataset Size | Linear | Binary | HashSet |
-|--------------|--------|--------|---------|
-| 10K          | TBD    | TBD    | TBD     |
-| 100K         | TBD    | TBD    | TBD     |
-| 1M           | TBD    | TBD    | TBD     |
+| Dataset Size | Linear (ns) | Binary (ns) | HashSet (ns) |
+|--------------|-------------|-------------|--------------|
+| 10,000       | 27,670.73   | 148.65      | 3.98         |
+| 100,000      | 305,835.61  | 182.46      | 5.38         |
+| 1,000,000    | 3,322,690.30| 219.52      | 6.74         |
 
-A chart (`results/performance.png`) will accompany the table.
+From 10K to 1M (a 100x increase in dataset size):
+
+- **Linear search** got about **120x slower** — consistent with O(n).
+- **Binary search** got about **1.5x slower** — consistent with O(log n),
+  since log₁₀(1,000,000) / log₁₀(10,000) = 6/4 = 1.5.
+- **HashSet lookup** got about **1.7x slower** — theory predicts O(1),
+  roughly flat. See the note under Trade-offs below on why it isn't
+  perfectly flat in practice.
+
+### Performance Chart
+  ![table](docs/performance.png)
+
+`results/performance.png` plots all three on a log-log scale (both
+axes logarithmic). Linear search's O(n) shows as a straight diagonal
+line. Binary search's O(log n) is a visibly bending curve, not a
+straight line — that bend is the actual mathematical signature of
+logarithmic growth. HashSet stays near-flat by comparison.
 
 ## The Trade-offs
 
@@ -100,6 +123,16 @@ O(n) extra memory. Binary search is a solid middle ground on time but
 requires the data to be sorted first, which has its own cost. Linear
 search needs no setup at all, which matters for small or one-off
 lookups.
+
+**A note on HashSet's numbers specifically:** the measured lookup time
+went from 3.98 ns to 6.74 ns as the dataset grew from 10K to 1M — not
+perfectly flat, even though the theoretical average is O(1). This is
+expected, not a flaw in the benchmark. Big O describes the number of
+operations, not wall-clock time on real hardware. As the backing array
+grows, it stops fitting in the CPU's cache, so more lookups pay the
+cost of a main-memory access instead of a cache hit. The algorithm is
+still O(1) in operation count; the hardware underneath it is not
+free.
 
 ## What I Learned
 
@@ -116,37 +149,30 @@ for infrastructure-level fixes, not a replacement for them.
 algorithm-cost-lab/
 ├── Dockerfile
 ├── docker-compose.yml
-├── .dockerignore
+├── run.sh
 ├── README.md
 ├── SETUP.md
 ├── REQUIREMENTS.md
 ├── pom.xml
 ├── src/
-│   ├── main/
-│   │   ├── java/com/ataraxia/algorithmcostlab/
-│   │   │   ├── AlgorithmCostLabApplication.java
-│   │   │   ├── controller/
-│   │   │   │   └── BenchmarkController.java
-│   │   │   ├── service/
-│   │   │   │   └── BenchmarkService.java
-│   │   │   ├── algorithm/
-│   │   │   │   ├── LinearSearch.java
-│   │   │   │   ├── BinarySearch.java
-│   │   │   │   └── HashLookup.java
-│   │   │   ├── benchmark/
-│   │   │   │   └── LookupBenchmark.java
-│   │   │   └── model/
-│   │   │       └── BenchmarkResult.java
-│   │   └── resources/
-│   │       └── application.properties
-│   └── test/
-│       └── java/com/ataraxia/algorithmcostlab/
-│           └── algorithm/
-│               ├── LinearSearchTest.java
-│               ├── BinarySearchTest.java
-│               └── HashLookupTest.java
+│   ├── main/java/com/algorithmcostlab/
+│   │   ├── AlgorithmCostLabApplication.java
+│   │   ├── controller/BenchmarkController.java
+│   │   ├── service/BenchmarkService.java
+│   │   ├── algorithm/
+│   │   │   ├── LinearSearch.java
+│   │   │   ├── BinarySearch.java
+│   │   │   └── HashLookup.java
+│   │   ├── benchmark/
+│   │   │   ├── LookupBenchmark.java
+│   │   │   ├── BenchmarkRunner.java
+│   │   │   ├── BenchmarkResultReader.java
+│   │   │   └── ChartGenerator.java
+│   │   ├── data/DatasetGenerator.java
+│   │   └── model/BenchmarkResult.java
+│   └── test/java/com/algorithmcostlab/...
 └── results/
-    ├── benchmark.csv
+    ├── benchmark.json
     └── performance.png
 ```
 

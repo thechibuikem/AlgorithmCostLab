@@ -68,6 +68,14 @@
 
     <build>
         <plugins>
+            
+            <!-- Springboot maven plugin -->
+            
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
 
             <!-- Java 21 compiler + JMH annotation processing -->
             <plugin>
